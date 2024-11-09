@@ -1,98 +1,165 @@
-# JMAGroundDataDownloader
+# JMA Weather Data Library
 
-The `JMAGroundDataDownloader` is a Python class designed for downloading and processing ground data from the Japan Meteorological Agency (JMA). This tool fetches meteorological data based on specified stations and dates, supporting both hourly and daily formats. It also translates variable headers from Japanese to English, making data analysis more accessible.
+This library provides tools to download, process, and visualize meteorological data from the Japan Meteorological Agency (JMA). It contains several classes for handling different types of weather data, including AMEDAS ground data, upper air data, and data plotting. This tutorial covers all classes available in the library.
 
 ## Table of Contents
 
-- [Installation](##installation)
+- [Installation](#installation)
+- [Classes Overview](#classes-overview)
+  - [JMAGroundDataDownloader](#jmagrounddatadownloader)
+  - [JMAUpperAirDownloader](#jmaupperairdownloader)
+  - [JMADataPlotter](#jmadataplotter)
+  - [AmedasData](#amedasdata)
 - [Usage](#usage)
-- [Class Structure](##class-structure)
-- [Data Variable Mappings](##data-variable-mappings)
-- [Methods Overview](##methods-overview)
-- [License](##license)
+- [Examples](#examples)
+- [License](#license)
 
 ## Installation
 
-To get started, clone the repository and install the required dependencies:
+To use this library, clone the repository and install the required dependencies:
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/JMAGroundDataDownloader.git
-   cd JMAGroundDataDownloader
+   git clone https://github.com/your-username/JMAWeatherDataLibrary.git
+   cd JMAWeatherDataLibrary
    ```
 
 2. Install the necessary Python libraries:
 
    ```bash
-   pip install pandas requests beautifulsoup4 numpy
+   pip install pandas requests beautifulsoup4 numpy matplotlib
    ```
+
+## Classes Overview
+
+### JMAGroundDataDownloader
+
+The `JMAGroundDataDownloader` class is designed to download ground meteorological data from JMA's Automated Meteorological Data Acquisition System (AMEDAS). It supports both hourly and daily data downloads, which are translated from Japanese to English to facilitate analysis.
+
+#### Key Features:
+- Downloads hourly and daily AMEDAS data.
+- Handles data conversion (e.g., compass directions to angles).
+- Saves downloaded data as CSV files.
+
+#### Constructor Parameters:
+- **`amedas_file`** (`str`): Path to the CSV file containing AMEDAS station information.
+- **`output_path`** (`str`): Directory to save downloaded data.
+
+#### Example Usage:
+```python
+from JMAGroundDataDownloader import JMAGroundDataDownloader
+from datetime import datetime
+
+# Initialize the downloader
+downloader = JMAGroundDataDownloader(amedas_file='Amedas_list.csv', output_path='grounddata_download')
+
+# Download hourly data for a specific station and date
+data, url = downloader.download_amedas(point=12345, date=datetime(2023, 8, 1), dtype='hourly')
+```
+
+### JMAUpperAirDownloader
+
+The `JMAUpperAirDownloader` class is used to download upper air data (sounding data) from JMA. It provides detailed meteorological information such as pressure, temperature, wind speed, and wind direction.
+
+#### Key Features:
+- Downloads sounding data from various upper air observation stations.
+- Processes data for temperature, humidity, and wind speed at different pressure levels.
+
+#### Constructor Parameters:
+- **`output_path`** (`str`): Directory to save downloaded data.
+
+#### Example Usage:
+```python
+from JMAUpperAirDownloader import JMAUpperAirDownloader
+import pandas as pd
+
+# Initialize the downloader
+downloader = JMAUpperAirDownloader(output_path='upperair_download')
+
+# Download upper air data for a specific station and date
+data = downloader.download_sounding_data(point='47646', date=pd.Timestamp('2023-06-01 09:00'))
+```
+
+### JMADataPlotter
+
+The `JMADataPlotter` class provides methods to visualize meteorological data, including sounding profiles, wind data, and temperature distributions.
+
+#### Key Features:
+- Plots upper air sounding data (e.g., Skew-T diagrams).
+- Visualizes temperature and wind profiles.
+
+#### Example Usage:
+```python
+from JMADataPlotter import JMADataPlotter
+
+# Initialize the plotter
+plotter = JMADataPlotter()
+
+# Plot sounding data
+plotter.plot_sounding(data)
+```
+
+### AmedasData
+
+The `AmedasData` class provides tools to handle AMEDAS data, such as data loading, filtering, and processing. It helps in reading existing AMEDAS datasets and performing operations like calculating averages, extracting specific columns, or merging multiple datasets.
+
+#### Key Features:
+- Reads and processes AMEDAS data files.
+- Supports data filtering and aggregation.
+
+#### Example Usage:
+```python
+from amedas_data_class import AmedasData
+
+# Initialize and load data
+amedas = AmedasData(file_path='grounddata_download/hourly/12345/2023_08_01.csv')
+
+# Process and analyze data
+amedas.filter_data_by_date(start_date='2023-08-01', end_date='2023-08-31')
+```
 
 ## Usage
 
-1. **Prepare AMEDAS Station File**: Ensure you have an `Amedas_list.csv` file with the necessary station details (station ID, location, etc.).
+1. **Download Ground Data**: Use the `JMAGroundDataDownloader` class to download AMEDAS data for specified stations and time periods.
+2. **Download Upper Air Data**: Use the `JMAUpperAirDownloader` to get sounding data from upper air observation stations.
+3. **Visualize Data**: Plot the downloaded data using the `JMADataPlotter` class.
+4. **Process Existing Data**: Use `AmedasData` for reading and processing downloaded AMEDAS data.
 
-2. **Initialize and Use the Downloader**:
+## Examples
 
-   ```python
-   from JMAGroundDataDownloader import JMAGroundDataDownloader
-   from datetime import datetime
+### Example 1: Download and Plot Sounding Data
+```python
+from JMAUpperAirDownloader import JMAUpperAirDownloader
+from JMADataPlotter import JMADataPlotter
+import pandas as pd
 
-   # Initialize the downloader
-   downloader = JMAGroundDataDownloader(amedas_file='Amedas_list.csv', output_path='grounddata_download')
+# Initialize downloader and plotter
+downloader = JMAUpperAirDownloader(output_path='upperair_download')
+plotter = JMADataPlotter()
 
-   # Download data for a specific station and date
-   station_id = 12345  # Example station ID
-   date = datetime(2023, 8, 1)
-   data, url = downloader.download_amedas(point=station_id, date=date, dtype='hourly')
-   ```
+# Download sounding data
+data = downloader.download_sounding_data(point='47646', date=pd.Timestamp('2023-06-01 09:00'))
 
-3. **Output Files**: Downloaded data is saved as CSV files in the specified `output_path`, organized by station and date.
+# Plot the sounding data
+plotter.plot_sounding(data)
+```
 
-## Class Structure
+### Example 2: Download and Analyze AMEDAS Data
+```python
+from JMAGroundDataDownloader import JMAGroundDataDownloader
+from amedas_data_class import AmedasData
+from datetime import datetime
 
-### Constructor Parameters
+# Download AMEDAS hourly data
+downloader = JMAGroundDataDownloader(amedas_file='Amedas_list.csv', output_path='grounddata_download')
+data, url = downloader.download_amedas(point=12345, date=datetime(2023, 8, 1), dtype='hourly')
 
-- **`amedas_file`** (`str`): Path to the AMEDAS station information CSV file.
-- **`output_path`** (`str`): Directory to save the downloaded data files.
-
-### Data Types
-
-The downloader supports both hourly and daily data, with variable names translated from Japanese to English. 
-
-## Data Variable Mappings
-
-The `vard` dictionary within the class maps Japanese weather variable names to English equivalents. Here are a few examples:
-
-- **Hourly Data**:
-  - 気温(℃) ➞ `temp_C`
-  - 降水量(mm) ➞ `precip_mm`
-  - 日照時間(h) ➞ `sunlit_h`
-
-- **Daily Data**:
-  - 合計(mm)_降水量 ➞ `precip-accum_mm`
-  - 平均(℃)_気温 ➞ `temp_C`
-  - 日照時間(h) ➞ `sunlit_h`
-
-Refer to the `vard` dictionary in the code for the full list of mappings.
-
-## Methods Overview
-
-- **`download_amedas(point, date, dtype)`**: Fetches and processes data for a specified station and date.
-  - **`point`** (`int`): Station ID.
-  - **`date`** (`datetime`): Date for the requested data.
-  - **`dtype`** (`str`): Data type, either `'hourly'` or `'daily'`.
-
-- **`get_info(h, att)`**: Retrieves the value of the specified attribute from an HTML element, if available.
-- **`rep_text(text)`**: Cleans up specific characters in text, like removing special characters.
-- **`rep_text_wdir(text)`**: Converts Japanese compass directions to English abbreviations (e.g., 東 to E).
-- **`compass2angle(com)`**: Translates compass directions into angles (e.g., NNE to 22.5°).
-
-### Example Workflow
-
-1. **Download Data**: Use `download_amedas()` to download and save hourly or daily data.
-2. **Data Processing**: Headers are translated from Japanese to English, and data is cleaned up for analysis.
-3. **Data Saving**: Data is saved in a standardized CSV format, organized in folders by station and date.
+# Load and analyze the data
+amedas = AmedasData(file_path='grounddata_download/hourly/12345/2023_08_01.csv')
+average_temp = amedas.calculate_average('temp_C')
+print(f"Average temperature: {average_temp} ℃")
+```
 
 ## License
 
@@ -100,4 +167,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 
 ---
 
-This `README.md` covers the key details, installation, usage instructions, and functionality of the `JMAGroundDataDownloader` class. Adjust any URLs or file names as necessary to match your repository structure!
+This tutorial covers all the available classes in the JMA Weather Data Library, providing detailed usage instructions and examples for each one. Adjust any URLs or file paths as needed to match your environment.
