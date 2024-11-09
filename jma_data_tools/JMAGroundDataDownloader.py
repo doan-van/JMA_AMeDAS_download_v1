@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import numpy as np
+from amedas_data_class import AmedasData
 
 
 class JMAGroundDataDownloader:
@@ -126,12 +127,20 @@ class JMAGroundDataDownloader:
         """
         
         opath = self.output_path
-        amedas_file = self.amedas_file
-        alist = pd.read_csv(amedas_file, index_col=0)
-        pinf = alist.loc[alist['station_id'] == int(point)].to_dict(orient='records')[0]
+        
+        #amedas_file = self.amedas_file
+        #alist = pd.read_csv(amedas_file, index_col=0)
+        #pinf = alist.loc[alist['station_id'] == int(point)].to_dict(orient='records')[0]
+        #prec_no  = str(pinf['fuken_id'])
+        #block_no = str(pinf['station_id']).zfill(4)
+        #st_type = pinf['type'].lower()
+        pinf = AmedasData.get_station_info(int(point))
         prec_no  = str(pinf['fuken_id'])
-        block_no = str(pinf['station_id']).zfill(4)
+        block_no = str(int(point)).zfill(4)
         st_type = pinf['type'].lower()
+        
+        #print(AmedasData.get_station_info(int(point)))
+        
         year, month, day = str(date.year), '%.2d' % date.month, '%.2d' % date.day
         days = {'hourly':day, 'daily':''}
                     
