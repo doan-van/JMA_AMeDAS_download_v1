@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: jma_data_tools
+Version: 0.1.0
+Summary: Utilities for downloading and visualizing JMA ground and upper-air data
+Home-page: https://github.com/yourusername/jma_data_tools
+Author: Your Name
+Author-email: your_email@example.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: requests
+Requires-Dist: beautifulsoup4
+Requires-Dist: metpy
+Requires-Dist: matplotlib
+Requires-Dist: cartopy
