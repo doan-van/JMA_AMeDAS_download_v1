@@ -21,8 +21,7 @@ To use this library, clone the repository and install the required dependencies:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/JMAWeatherDataLibrary.git
-   cd JMAWeatherDataLibrary
+   git clone https://github.com/doan-van/download_JMA_AMeDAS_data.git
    ```
 
 2. Install the necessary Python libraries:
@@ -30,7 +29,13 @@ To use this library, clone the repository and install the required dependencies:
    ```bash
    pip install pandas requests beautifulsoup4 numpy matplotlib
    ```
+   
+3. Install:
 
+   ```bash
+   cd download_JMA_AMeDAS_data
+   pip install .
+   ```
 ## Classes Overview
 
 ### JMAGroundDataDownloader
@@ -43,7 +48,7 @@ The `JMAGroundDataDownloader` class is designed to download ground meteorologica
 - Saves downloaded data as CSV files.
 
 #### Constructor Parameters:
-- **`amedas_file`** (`str`): Path to the CSV file containing AMEDAS station information.
+
 - **`output_path`** (`str`): Directory to save downloaded data.
 
 #### Example Usage:
