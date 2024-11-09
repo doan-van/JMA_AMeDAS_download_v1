@@ -97,7 +97,7 @@ class JMADataPlotter:
             os.makedirs(self.output_dir)
         plt.savefig(os.path.join(self.output_dir, 'temp-hum-wind.png'), dpi=150)
         
-    def plot_sounding(self, df, date):
+    def plot_sounding(self, df, date='date'):
         
         p = df.index.astype(float).values * units.hPa
         T = df['Temp(C)'].values.astype(float) * units.degC
@@ -125,7 +125,7 @@ class JMADataPlotter:
         
         cape, cin = mpcalc.cape_cin(p, T, Td, prof, which_lfc='bottom', which_el='top')
         text = f'LCL: {lcl_pressure.m:.0f} hPa\nCAPE: {cape.m:.0f} J/kg\nCIN: {cin.m:.0f} J/kg\n'
-        skew.ax.text(1.2, 0.3, date.strftime('%Y %b %d %H:00'), transform=skew.ax.transAxes, fontsize=12, fontweight='bold')
+        skew.ax.text(1.2, 0.1, date, transform=skew.ax.transAxes, fontsize=14, fontweight='bold')
         skew.ax.text(1.25, 0.26, text, transform=skew.ax.transAxes, fontsize=11)
         skew.ax.axvline(0, color='c', linestyle='--', linewidth=2)
         skew.plot_dry_adiabats()

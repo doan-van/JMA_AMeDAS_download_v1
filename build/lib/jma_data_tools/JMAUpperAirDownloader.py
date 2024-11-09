@@ -7,9 +7,15 @@ import os
 
 
 class JMAUpperAirDownloader:
-    def __init__(self, amedas_file='Amedas_list.csv', output_path='data_download'):
+    def __init__(self, amedas_file='Amedas_list.csv', output_path='upperair_download'):
         self.amedas_file = amedas_file
         self.output_path = output_path
+        self.url = {}
+        self.data_at_defined_press = None
+        self.wind_data = None
+        self.temphum_data = None
+        self.output_files = {}
+        
 
     def get_info(self, h, att):
         if h.has_attr(att):
@@ -38,24 +44,37 @@ class JMAUpperAirDownloader:
         return text.replace('///', '').replace('特異点', 'SingularPoint')
     
     
-    def get_data_sonde(self, point, date):
+    def download_sounding_data(self, point, date):
+        """
+        Downloads sounding data for a specified station (point) and date from JMA.
+        
+        Parameters:
+            point (str): The station ID for the location.
+            date (pd.Timestamp): The date and time for the sounding data.
+        
+        Returns:
+            dict: A dictionary containing DataFrames of interpolated data, temperature and humidity, and wind data.
+        """
+        
         opath = self.output_path
         print(date)
         year, mon, day, hour = str(date.year), '%.2d' % date.month, '%.2d' % date.day,'%.2d' % date.hour
         hour = str(date.hour)
+        
+        
         try:
+            
             hp1 = 'https://www.data.jma.go.jp/obd/stats/etrn/upper/view/'
             url = hp1 + 'hourly_usp.php?year='+year+'&month='+mon+'&day='+day+'&hour='+hour+'&atm=&point='+point+'&view='
             print('***' , '指定気圧面の観測データ', '****')
             print('trying to access:  ', url)
-            
+            self.url['data_at_defined_press'] = url
             
             response = requests.get(url)
             soup = BeautifulSoup(response.content, "html.parser")
             table1 = soup.find('table', id='tablefix1') # Get table
             table2 = soup.find('table', id='tablefix2') # Get table
                       
-            #daily_uth.php?year=2020&month=2&day=1&hour=21&atm=&point=47646&view=
             
             url = hp1 + 'daily_uth.php?year='+year+'&month='+mon+'&day='+day+'&hour='+hour+'&atm=&point='+point+'&view='
             
@@ -64,9 +83,7 @@ class JMAUpperAirDownloader:
             response = requests.get(url)
             soup = BeautifulSoup(response.content, "html.parser")
             table3 = soup.find('table', id='tablefix1') # Get table
-            
-            
-            #daily_uwd.php?year=2020&month=2&day=1&hour=21&atm=&point=47646&view=
+            self.url['temphum'] = url
             
             url = hp1 + 'daily_uwd.php?year='+year+'&month='+mon+'&day='+day+'&hour='+hour+'&atm=&point='+point+'&view='
             print('***' , '風の観測データ', '****')
@@ -74,7 +91,7 @@ class JMAUpperAirDownloader:
             response = requests.get(url)
             soup = BeautifulSoup(response.content, "html.parser")
             table4 = soup.find('table', id='tablefix1') # Get table
-            
+            self.url['wind'] = url
         
             dd = []
             for table in [table1, table2,table3,table4]:
@@ -122,22 +139,32 @@ class JMAUpperAirDownloader:
                 dout.set_index('Pres(hPa)',inplace=True)
                 for c in dout.columns: dout.loc[:,c] = pd.to_numeric(dout.loc[:,c], errors='coerce')
                 dip = dout
-                dip.to_csv(path+'Interp_'+year+'-'+mon+'-'+day+'_'+hour+".csv", header=True, index=False, encoding='utf-8')
+                ofile1 = path+'Interp_'+year+'-'+mon+'-'+day+'_'+hour+".csv"
+                dip.to_csv(ofile1, header=True, index=False, encoding='utf-8')
             
             if (table3 != None):          
                 dout = dd[2]
                 dout.set_index('Pres(hPa)',inplace=True)
                 for c in dout.columns[:-1]: dout.loc[:,c] = pd.to_numeric(dout.loc[:,c], errors='coerce')
                 dth = dout
-                dth.to_csv(path+'TempHum_'+year+'-'+mon+'-'+day+'_'+hour+".csv", header=True, index=False, encoding='utf-8')
+                ofile2 = path+'TempHum_'+year+'-'+mon+'-'+day+'_'+hour+".csv"
+                dth.to_csv(ofile2, header=True, index=False, encoding='utf-8')
 
             if (table4 != None):               
                 dout = dd[3]
                 dout.set_index('Pres(hPa)',inplace=True)
                 for c in dout.columns[:-1]: dout.loc[:,c] = pd.to_numeric(dout.loc[:,c], errors='coerce')
                 dwd = dout
-                dwd.to_csv(path+'Wind_'+year+'-'+mon+'-'+day+'_'+hour+".csv", header=True, index=False, encoding='utf-8')
-            return {'noisuy':dip, 'qtrac_th': dth, 'qtrac_wind':dwd}
+                ofile3 = path+'Wind_'+year+'-'+mon+'-'+day+'_'+hour+".csv"
+                dwd.to_csv(ofile3, header=True, index=False, encoding='utf-8')
+            
+            
+            self.data_at_defined_press = dip
+            self.wind_data = dwd
+            self.temphum_data = dth
+            self.output_files = { 'file1': ofile1, 'file2': ofile2, 'file3': ofile3 }
+        
+            return dip
         
         except:
             print(date, '\n **** \n File not exist \n **** \n') 
@@ -151,11 +178,11 @@ class JMAUpperAirDownloader:
 if __name__ == "__main__":
     
     # Initialize the downloader
-    downloader = JMAUpperAirDownloader(output_path='test_data')
+    downloader = JMAUpperAirDownloader(output_path='upperair_test_download')
     
-    from PlotJAM import PlotJMA
+    from JMADataPlotter import JMADataPlotter
     
-    plotter = PlotJMA()
+    #plotter = PlotJMA()
     #amedas_file = 'Amedas_list.csv'
     #alist = pd.read_csv(amedas_file, index_col=0).set_index('station_id')
     
@@ -173,4 +200,16 @@ if __name__ == "__main__":
     test_point = '47646'  # Example station code for Tsukuba
     test_date = pd.Timestamp('2022-06-01 09:00')
     
-    data = downloader.get_data_sonde(test_point, test_date)
+    data = downloader.download_sounding_data(test_point, test_date)
+    plotter = JMADataPlotter()
+    plotter.plot_sounding(data)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
