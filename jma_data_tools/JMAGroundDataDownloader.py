@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import numpy as np
-from amedas_data_class import AmedasData
+from .amedas_data_class import AmedasData
 
 
 class JMAGroundDataDownloader:
@@ -295,7 +295,7 @@ if __name__ == "__main__":
     from JMAGroundDataDownloader import JMAGroundDataDownloader  # Import your class here
 
     # Initialize the downloader
-    downloader = JMAGroundDataDownloader(amedas_file='../Amedas_list.csv', output_path='test_output')
+    downloader = JMAGroundDataDownloader(output_path='test_output')
 
     # Test Parameters
     station_id = '47646'  # Example station ID (e.g., Tsukuba station)

@@ -53,14 +53,14 @@ The `JMAGroundDataDownloader` class is designed to download ground meteorologica
 
 #### Example Usage:
 ```python
-from JMAGroundDataDownloader import JMAGroundDataDownloader
-from datetime import datetime
-
+from jma_data_tools import JMAGroundDataDownloader
+import pandas as pd
 # Initialize the downloader
-downloader = JMAGroundDataDownloader(amedas_file='Amedas_list.csv', output_path='grounddata_download')
-
-# Download hourly data for a specific station and date
-data, url = downloader.download_amedas(point=12345, date=datetime(2023, 8, 1), dtype='hourly')
+downloader = JMAGroundDataDownloader(output_path='ground_data')
+# Test Parameters
+station_id = '47646'  # Example station ID (e.g., Tsukuba station)
+test_date = pd.Timestamp('2022-02-01')  # Example date
+hourly_data, url = downloader.download_amedas(station_id, test_date, dtype='hourly')
 ```
 
 ### JMAUpperAirDownloader
@@ -76,14 +76,12 @@ The `JMAUpperAirDownloader` class is used to download upper air data (sounding d
 
 #### Example Usage:
 ```python
-from JMAUpperAirDownloader import JMAUpperAirDownloader
-import pandas as pd
-
+from jma_data_tools import JMAUpperAirDownloader
 # Initialize the downloader
-downloader = JMAUpperAirDownloader(output_path='upperair_download')
-
-# Download upper air data for a specific station and date
-data = downloader.download_sounding_data(point='47646', date=pd.Timestamp('2023-06-01 09:00'))
+downloader = JMAUpperAirDownloader(output_path='upperair_data')
+test_point = '47646'  # Example station code for Tsukuba
+test_date = pd.Timestamp('2022-06-01 09:00')
+data = downloader.download_sounding_data(test_point, test_date)
 ```
 
 ### JMADataPlotter
@@ -96,13 +94,14 @@ The `JMADataPlotter` class provides methods to visualize meteorological data, in
 
 #### Example Usage:
 ```python
-from JMADataPlotter import JMADataPlotter
-
-# Initialize the plotter
+from jma_data_tools import JMAUpperAirDownloader
+downloader = JMAUpperAirDownloader(output_path='upperair_data')
+from jma_data_tools import JMADataPlotter
+test_point = '47646'  # Example station code for Tsukuba
+test_date = pd.Timestamp('2022-06-01 09:00')
+data = downloader.download_sounding_data(test_point, test_date)
 plotter = JMADataPlotter()
-
-# Plot sounding data
-plotter.plot_sounding(data)
+plotter.plot_sounding(data, date)
 ```
 
 ### AmedasData
@@ -115,13 +114,22 @@ The `AmedasData` class provides tools to handle AMEDAS data, such as data loadin
 
 #### Example Usage:
 ```python
-from amedas_data_class import AmedasData
-
-# Initialize and load data
-amedas = AmedasData(file_path='grounddata_download/hourly/12345/2023_08_01.csv')
-
-# Process and analyze data
-amedas.filter_data_by_date(start_date='2023-08-01', end_date='2023-08-31')
+from jma_data_tools import AmedasData
+# Test: Get information for a specific station ID
+station_id = 47646  # Replace with actual station ID
+print(AmedasData.get_station_info(station_id))
+# Test: Get stations in a specific fuken_id
+fuken_id = 11  # Replace with actual fuken_id
+print(f"Stations in fuken_id {fuken_id}:")
+stations_in_fuken = AmedasData.get_stations_by_fuken_id(fuken_id)
+for station_id, info in stations_in_fuken.items():
+    print(f"Station ID: {station_id}, Name: {info['station_name']}")
+# Test: Get stations in a latitude and longitude range
+lat_min, lat_max = 35.0, 37.0
+lon_min, lon_max = 139.0, 141.0
+stations_in_range = AmedasData.get_stations_by_location_range(lat_min, lat_max, lon_min, lon_max)
+for station_id, info in stations_in_range.items():
+    print(f"Station ID: {station_id}, Name: {info['station_name']}")
 ```
 
 ## Usage
@@ -133,43 +141,8 @@ amedas.filter_data_by_date(start_date='2023-08-01', end_date='2023-08-31')
 
 ## Examples
 
-### Example 1: Download and Plot Sounding Data
-```python
-from JMAUpperAirDownloader import JMAUpperAirDownloader
-from JMADataPlotter import JMADataPlotter
-import pandas as pd
-
-# Initialize downloader and plotter
-downloader = JMAUpperAirDownloader(output_path='upperair_download')
-plotter = JMADataPlotter()
-
-# Download sounding data
-data = downloader.download_sounding_data(point='47646', date=pd.Timestamp('2023-06-01 09:00'))
-
-# Plot the sounding data
-plotter.plot_sounding(data)
-```
-
-### Example 2: Download and Analyze AMEDAS Data
-```python
-from JMAGroundDataDownloader import JMAGroundDataDownloader
-from amedas_data_class import AmedasData
-from datetime import datetime
-
-# Download AMEDAS hourly data
-downloader = JMAGroundDataDownloader(amedas_file='Amedas_list.csv', output_path='grounddata_download')
-data, url = downloader.download_amedas(point=12345, date=datetime(2023, 8, 1), dtype='hourly')
-
-# Load and analyze the data
-amedas = AmedasData(file_path='grounddata_download/hourly/12345/2023_08_01.csv')
-average_temp = amedas.calculate_average('temp_C')
-print(f"Average temperature: {average_temp} ℃")
-```
+See test example in test/
 
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more information.
-
----
-
-This tutorial covers all the available classes in the JMA Weather Data Library, providing detailed usage instructions and examples for each one. Adjust any URLs or file paths as needed to match your environment.
