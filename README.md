@@ -21,7 +21,7 @@ To use this library, clone the repository and install the required dependencies:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/doan-van/download_JMA_AMeDAS_data.git
+   git clone https://github.com/doan-van/JMA_AMeDAS_download_v1.git
    ```
 
 2. Install the necessary Python libraries:
@@ -33,7 +33,7 @@ To use this library, clone the repository and install the required dependencies:
 3. Install:
 
    ```bash
-   cd download_JMA_AMeDAS_data
+   cd JMA_AMeDAS_download_v1
    pip install .
    ```
 ## Classes Overview
