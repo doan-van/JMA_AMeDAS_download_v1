@@ -4,8 +4,8 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import numpy as np
-from amedas_data_class import AmedasData
-
+from .amedas_data_class import AmedasData
+pd.set_option('future.no_silent_downcasting', True)
 
 class JMAGroundDataDownloader:
     def __init__(self, amedas_file='Amedas_list.csv', output_path='grounddata_download'):
@@ -247,7 +247,8 @@ class JMAGroundDataDownloader:
                 
                 #====
                 do = do.replace('///',np.NaN)
-                do = do.replace('×', '-999')
+                do = do.replace('×', '-999').infer_objects(copy=False)
+                do = do.replace('--', '0').infer_objects(copy=False)
                 for c in do.columns[:]: do[c] = pd.to_numeric(do[c], errors='coerce')
 
                 # =======
@@ -295,7 +296,7 @@ if __name__ == "__main__":
     from JMAGroundDataDownloader import JMAGroundDataDownloader  # Import your class here
 
     # Initialize the downloader
-    downloader = JMAGroundDataDownloader(amedas_file='../Amedas_list.csv', output_path='test_output')
+    downloader = JMAGroundDataDownloader(output_path='test_output')
 
     # Test Parameters
     station_id = '47646'  # Example station ID (e.g., Tsukuba station)
